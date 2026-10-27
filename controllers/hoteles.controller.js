@@ -1,101 +1,132 @@
 import { habitaciones, hoteles } from "../db/db.js"
 import { v4 as uuidv4 } from 'uuid';
+import hotelesModel from "../models/hoteles.models.js";
 
 class HotelesControllers {
     mostrarTodos(){
-        return({
-            data: hoteles.length === 0 ? null : hoteles,
-            menssage: hoteles.length === 0 ? "No hay hoteles" : "Hoteles listados exitosamente"
+        return new Promise(async (resolve, reject) => {
+            try {
+            const response = await hotelesModel.allHotels()
+            return resolve({
+                data: response.rows,
+                message: "hoteles listados de la base de datos"
+            })
+        } catch (error) {
+            return reject({
+                data: null,
+                message: "Existe un error"
+            })
+        }
         })
     }
 
     motrarUno(idHotel){
-        for (let i = 0; i < hoteles.length; i++) {
-            if (hoteles[i].id === idHotel) {
-                return({
-                    data: {
-                        hotel: hoteles[i]
-                    },
-                    message: "Hotel encontrado con exito"
-                })
-            }
-        }
+        return new Promise(async (resolve, reject) => {
+            try {
+                const hotelSeleccionado = await hotelesModel.oneHotel(idHotel)
 
-        return({
-            data: null,
-            message: "Hotel no encontrado"
+                if (hotelSeleccionado.rows.length === 0) {
+                    return reject({
+                        data: null,
+                        message: "No se encontro el hotel"
+                    })
+                }
+
+                return resolve({
+                    data: hotelSeleccionado.rows,
+                    message: "Hotel encontro con exito"
+                })
+            } catch (error) {
+                return reject({
+                data: null,
+                message: "Existe un error"
+            })
+            }
         })
     }
 
     agregarHotel(newHotel){
-        if (!newHotel.nombre || !newHotel.ubicacion || !newHotel.rif || !newHotel.estrellas || !newHotel.dueño) {
-            return({
-                data: null,
-                message: "Faltan datos indispensables"
-            })
-        }
+        return new Promise(async (resolve, reject) => {
+            try {
+                if (!newHotel.nombre || !newHotel.ubicacion || !newHotel.rif || !newHotel.estrellas || !newHotel.dueño) {
+                    return reject({
+                        data: null,
+                        message: "Faltan datos indispensables"
+                    })
+                }
 
-        const nuevoHotel = {
-            id: uuidv4(),
-            nombre: newHotel.nombre,
-            ubicacion: newHotel.ubicacion,
-            rif: newHotel.rif,
-            dueño: newHotel.dueño,
-            estrellas: newHotel.estrellas,
-        }
-        hoteles.push(nuevoHotel)
-        return({
-            data: {
-                nuevoHotel,
-                hoteles
-            },
-            message: "Hotel agregado con exito"
+                const nuevoHotel = {
+                    nombre: newHotel.nombre,
+                    ubicacion: newHotel.ubicacion,
+                    rif: newHotel.rif,
+                    dueño: newHotel.dueño,
+                    estrellas: newHotel.estrellas,
+                }
+
+                const responseDB = await hotelesModel.addHotel(nuevoHotel)
+                const hotelSeleccionado = await this.motrarUno(responseDB.data[0].insertId)
+
+                return resolve({
+                    data: {
+                        hotelNuevo: hotelSeleccionado.data
+                    },
+                    message: "Se agrego el hotel"
+                })
+            } catch (error) {
+                return reject({
+                    data: null,
+                    message: "Existe un error"
+                })
+            }
         })
     }
 
     actualizarHotel(updateHotel, idHotel){
-        for (let i = 0; i < hoteles.length; i++) {
-            if (hoteles[i].id === idHotel) {
-                hoteles[i].nombre = !updateHotel.nombre ? hoteles[i].nombre : updateHotel.nombre
-                hoteles[i].rif = !updateHotel.rif ? hoteles[i].rif : updateHotel.rif
-                hoteles[i].ubicacion = !updateHotel.ubicacion ? hoteles[i].ubicacion : updateHotel.ubicacion
-                hoteles[i].estrellas = !updateHotel.estrellas ? hoteles[i].estrellas : updateHotel.estrellas
-                hoteles[i].dueño = !updateHotel.dueño ? hoteles[i].dueño : updateHotel.dueño
+        return new Promise( async (resolve, reject) => {
+            try {
+                const oldHotel = await this.motrarUno(idHotel)
 
-                return({
+                console.log(oldHotel)
+                oldHotel.data[0].nombre = !updateHotel.nombre ? oldHotel.data[0].nombre : updateHotel.nombre
+                oldHotel.data[0].rif = !updateHotel.rif ? oldHotel.data[0].rif : updateHotel.rif
+                oldHotel.data[0].ubicacion = !updateHotel.ubicacion ? oldHotel.data[0].ubicacion : updateHotel.ubicacion
+                oldHotel.data[0].estrellas = !updateHotel.estrellas ? oldHotel.data[0].estrellas : updateHotel.estrellas
+                oldHotel.data[0].dueño = !updateHotel.dueño ? oldHotel.data[0].dueño : updateHotel.dueño
+
+                const newHotel = await hotelesModel.updateHotel(oldHotel.data[0], idHotel)
+                return resolve({
                     data: {
-                        updateHotel: hoteles[i],
-                        hoteles
-                    },
-                    message: "Hotel actualizado exitosamente"
+                        hotelActualizado: oldHotel.data[0],
+                        message: "Hotel actualizado correctamente"
+                    }
+                })
+            } catch (error) {
+                return reject({
+                    data: null,
+                    message: error.message
                 })
             }
-        }
-
-        return({
-            data: null,
-            message: "Hotel no encontrado"
         })
     }
 
     eliminarHotel(idHotel){
-        for (let i = 0; i < hoteles.length; i++) {
-            if (hoteles[i].id === idHotel) {
-                habitaciones.filter(habitacion => habitacion.idHotel != idHotel)
-                
-                hoteles.splice(i, 1)
-                return({
+        return new Promise(async (resolve, reject) => {
+            try {
+                const hotelSeleccionado = await this.motrarUno(idHotel)
+
+                const hotelDelete = await hotelesModel.deleteHotel(idHotel)
+                return resolve({
                     data: {
-                        hoteles
+                        hotelEliminado: hotelSeleccionado.data[0]
                     },
-                    message: "Hotel eliminado exitosamente"
+                    message: "Hotel elimnado Exitosamente"
+                })
+            } catch (error) {
+                return reject({
+                    data: null,
+                    message: error.message
                 })
             }
-        }
-
-        return({
-            data: null,
-            message: "Hotel no encontrado"
         })
     }
 }

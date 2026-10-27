@@ -1,0 +1,16 @@
+
+        for (let i = 0; i < hoteles.length; i++) {
+            if (hoteles[i].id === idHotel) {
+                return({
+                    data: {
+                        hotel: hoteles[i]
+                    },
+                    message: "Hotel encontrado con exito"
+                })
+            }
+        }
+
+        return({
+            data: null,
+            message: "Hotel no encontrado"
+        })

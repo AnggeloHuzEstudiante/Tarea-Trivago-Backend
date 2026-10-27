@@ -3,11 +3,21 @@ import express from 'express';
 import path from 'path';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
+import dotenv from 'dotenv'
+import cors from 'cors'
+
+dotenv.config()
 
 import hotelesRoutes from './routes/hoteles.routes.js'
 import habitacionesRoutes from './routes/habitaciones.routes.js'
+import {connection} from './config/connection.js';
+
+// Asegurandome que tengo conexion con la base datos
+connection()
 
 var app = express();
+
+app.use(cors());
 
 // view engine setup
 //app.set('views', path.join(__dirname, 'views'));
