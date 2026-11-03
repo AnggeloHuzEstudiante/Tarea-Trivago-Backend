@@ -1,5 +1,6 @@
 import express from 'express';
 import hotelesControllers from '../controllers/hoteles.controller.js';
+import { verifyToken } from '../middlewares/auth.js';
 const router = express.Router();
 
 /* GET home page. */
@@ -17,7 +18,16 @@ router.get('/todos', async function(req, res, next) {
   }
 });
 
-router.get('/uno/:id', async function(req, res, next) {
+router.get('/uno/:id', function(req, res, next){
+  const verificacion = verifyToken(req.headers['authorization'], ["root", "admin", "user"])
+  if (verificacion) {
+    next();
+  } else {
+    res.status(400).json({
+      message: "no pasas"
+    })
+  }
+} , async function(req, res, next) {
   try {
     const response = await hotelesControllers.motrarUno(req.params.id)
 

@@ -10,6 +10,7 @@ dotenv.config()
 
 import hotelesRoutes from './routes/hoteles.routes.js'
 import habitacionesRoutes from './routes/habitaciones.routes.js'
+import usuariosRoutes from './routes/usuarios.routes.js'
 import {connection} from './config/connection.js';
 
 // Asegurandome que tengo conexion con la base datos
@@ -31,6 +32,7 @@ app.use(cookieParser());
 
 app.use('/hoteles', hotelesRoutes);
 app.use('/habitaciones', habitacionesRoutes);
+app.use('/usuarios', usuariosRoutes);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
