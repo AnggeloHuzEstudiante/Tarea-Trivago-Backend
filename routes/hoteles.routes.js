@@ -4,7 +4,29 @@ import { verifyToken } from '../middlewares/auth.js';
 const router = express.Router();
 
 /* GET home page. */
-router.get('/todos', async function(req, res, next) {
+router.get('/todos/views', async function(req, res, next) {
+  try {
+    const response = await hotelesControllers.mostrarTodos()
+    res.render("hoteles", {
+        data: response.data
+    })
+  } catch (error) {
+    res.status(400).json({
+        message: error.menssage
+    })
+  }
+});
+
+router.get('/todos',function(req, res, next){
+  const verificacion = verifyToken(req.headers['authorization'], ["root", "admin", "user"])
+  if (verificacion.status) {
+    next();
+  } else {
+    res.status(400).json({
+      message: verificacion.message
+    })
+  }
+}, async function(req, res, next) {
   try {
     const response = await hotelesControllers.mostrarTodos()
     res.status(200).json({
@@ -20,11 +42,11 @@ router.get('/todos', async function(req, res, next) {
 
 router.get('/uno/:id', function(req, res, next){
   const verificacion = verifyToken(req.headers['authorization'], ["root", "admin", "user"])
-  if (verificacion) {
+  if (verificacion.status) {
     next();
   } else {
     res.status(400).json({
-      message: "no pasas"
+      message: verificacion.message
     })
   }
 } , async function(req, res, next) {
@@ -48,7 +70,16 @@ router.get('/uno/:id', function(req, res, next){
   }
 });
 
-router.post('/crear', async function(req, res, next) {
+router.post('/crear', function(req, res, next){
+  const verificacion = verifyToken(req.headers['authorization'], ["root", "admin"])
+  if (verificacion.status) {
+    next();
+  } else {
+    res.status(400).json({
+      message: verificacion.message
+    })
+  }
+}, async function(req, res, next) {
   try {
     const response = await hotelesControllers.agregarHotel(req.body)
     res.status(201).json({
@@ -62,7 +93,16 @@ router.post('/crear', async function(req, res, next) {
   }
 });
 
-router.put('/actualizar/:id', async function(req, res, next) {
+router.put('/actualizar/:id', function(req, res, next){
+  const verificacion = verifyToken(req.headers['authorization'], ["root", "admin"])
+  if (verificacion.status) {
+    next();
+  } else {
+    res.status(400).json({
+      message: verificacion.message
+    })
+  }
+},  async function(req, res, next) {
   try {
     const response = await hotelesControllers.actualizarHotel(req.body, req.params.id)
     res.status(201).json({
@@ -76,7 +116,16 @@ router.put('/actualizar/:id', async function(req, res, next) {
   }
 });
 
-router.delete('/eliminar/:id', async function(req, res, next) {
+router.delete('/eliminar/:id', function(req, res, next){
+  const verificacion = verifyToken(req.headers['authorization'], ["root"])
+  if (verificacion.status) {
+    next();
+  } else {
+    res.status(400).json({
+      message: verificacion.message
+    })
+  }
+}, async function(req, res, next) {
   try {
     const response = await hotelesControllers.eliminarHotel(req.params.id)
     res.status(200).json({

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi App con EJS</title>
+</head>
+<body>
+    <h1>Mensaje!</h1>
+    <p>Bienvenido a nuestra aplicación con Express y EJS.</p>
+
+    <h1>Hoteles Disponibles</h1>
+
+    <% if (data.length > 0) { %>
+        <ul>
+            <% data.forEach(hotel => { %>
+                <li>
+                    <strong><%= hotel.nombre %></strong> 
+                </li>
+            <% }) %>
+        </ul>
+    <% } else { %>
+        <p>No hay hoteles registrados en la base de datos.</p>
+    <% } %>
+</body>
+</html>

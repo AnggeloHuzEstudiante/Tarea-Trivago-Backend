@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import dotenv from 'dotenv'
 import cors from 'cors'
+import { fileURLToPath } from 'url';
 
 dotenv.config()
 
@@ -22,7 +23,10 @@ app.use(cors());
 
 // view engine setup
 //app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
 app.use(logger('dev'));
 app.use(express.json());

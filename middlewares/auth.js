@@ -11,16 +11,39 @@ export function generateToken(user) {
 }
 
 export function decodedToken(token) {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    return decoded
+    try {
+        let decoded = jwt.verify(token, process.env.JWT_SECRET);
+        return decoded
+    } catch(err) {
+        return null
+    }
 }
 
 export function verifyToken(authorization, role) {
+    if (authorization === undefined) {
+        return ({
+            status: false,
+            message: "No hay token registrado"
+        })
+    }
     const token = authorization.replace(/^Bearer\s+/i, '');
     const decoded = decodedToken(token)
+
+    if (decoded === null) {
+        return ({
+            status: false,
+            message: "Token invalido"
+        })
+    }
+
     if (role.includes(decoded.data.role)) {
-        return true
+        return ({
+            status: true,
+        })
     } else {
-        return false
+        return ({
+            status: false,
+            message: "No tienes el rol permitido"
+        })
     }
 }
